@@ -1,7 +1,8 @@
 import pygame, sys
-from physik import Physics
 
 WIDTH, HEIGHT = 800, 600 #fenster größe
+FPS = 60 #bilder pro sekunde
+
 
 class Game:
    def __init__(self):
@@ -30,6 +31,7 @@ class Game:
       self.playerX, self.playerY = centerofscreen_x(self.playerBreite), 50 
       self.player = pygame.Rect(self.playerX, self.playerY, self.playerBreite, self.playerHöhe)
       self.velocity_y = 0
+      self.flip = False
 
       #boden 
       self.groundBreite, self.groundHöhe = 300, 25
@@ -45,6 +47,22 @@ class Game:
       self.SCHWARZ = (0, 0, 0) #ground farbe
    
    def update(self):
+      #reset bewegung
+      self.velocity_x = 0
+
+      key = pygame.key.get_pressed()
+      if key[pygame.K_d] or key[pygame.K_RIGHT]:
+         self.velocity_x = 3
+      elif key[pygame.K_a] or key[pygame.K_LEFT]:
+         self.velocity_x = -3   
+
+      #move player horizontal
+      self.player.x += self.velocity_x
+
+      #jump
+      if key[pygame.K_SPACE] and self.velocity_y >= 0.75 and self.player.colliderect(self.ground) - 1:
+         self.velocity_y += -8 
+
       #apply gravity
       self.velocity_y += self.GRAVITY
       self.player.y += self.velocity_y
@@ -53,6 +71,7 @@ class Game:
       if self.player.colliderect(self.ground):
          self.player.bottom = self.ground.top
          self.velocity_y = 0
+      
       
 
    def draw(self):
@@ -76,9 +95,13 @@ class Game:
 
          self.update()
          self.draw()
+
+         print(self.velocity_y)
+         if pygame.key.get_pressed()[pygame.K_SPACE]:
+            print("SPRINGE")
       
          self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0)) #skalierung
-         self.clock.tick(60) #FPS
+         self.clock.tick(FPS) #FPS
 
 if __name__ == '__main__':
    game = Game()
