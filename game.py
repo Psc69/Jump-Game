@@ -33,10 +33,16 @@ class Game:
       self.velocity_y = 0
       self.flip = False
 
+
       #boden 
       self.groundBreite, self.groundHöhe = 300, 25
       self.groundX, self.groundY = centerofscreen_x(self.groundBreite), self.display.get_height() - 50
       self.ground = pygame.Rect(self.groundX, self.groundY, self.groundBreite, self.groundHöhe)
+
+      #decke
+      self.ceilingBreite, self.ceilingHöhe = 300, 25
+      self.ceilingX, self.ceilingY = centerofscreen_x(self.ceilingBreite), +60
+      self.ceiling = pygame.Rect(self.ceilingX, self.ceilingY, self.ceilingBreite, self.ceilingHöhe)
 
       #physik variablen
       self.GRAVITY = 0.25
@@ -45,10 +51,45 @@ class Game:
       self.BG = (200, 180, 150) #hintergrund farbe
       self.WEISS = (255, 255, 255) #spieler farbe
       self.SCHWARZ = (0, 0, 0) #ground farbe
+      self.ROT = (255, 0, 0) #ROT
+
+   #platform
+   def tile (self, x, y):
+      return pygame.Rect(x, y, 50, 50)
    
    def update(self):
       #reset bewegung
       self.velocity_x = 0
+
+      #apply gravity
+      self.velocity_y += self.GRAVITY
+      
+      #move player vertically
+      self.player.y += self.velocity_y
+
+      #ceiling collider
+      self.player.head = pygame.Rect( #x, y, breite, höhe
+         self.player.x,
+         self.player.bottom,
+         self.player.width,
+         5
+      )
+
+      #feet collider
+      self.player_feet = pygame.Rect( #x, y, breite, höhe
+         self.player.x,
+         self.player.bottom,
+         self.player.width,
+         5
+      )
+
+      #ground collision
+      if self.player_feet.colliderect(self.ground) and self.velocity_y >= 0:
+         self.player.bottom = self.ground.top
+         self.velocity_y = 0
+         self.on_ground = True
+      else:
+         self.on_ground = False
 
       key = pygame.key.get_pressed()
       if key[pygame.K_d] or key[pygame.K_RIGHT]:
@@ -60,17 +101,9 @@ class Game:
       self.player.x += self.velocity_x
 
       #jump
-      if key[pygame.K_SPACE] and self.velocity_y >= 0.75 and self.player.colliderect(self.ground) - 1:
+      if key[pygame.K_SPACE] and self.on_ground:
          self.velocity_y += -8 
 
-      #apply gravity
-      self.velocity_y += self.GRAVITY
-      self.player.y += self.velocity_y
-
-      #ground collision
-      if self.player.colliderect(self.ground):
-         self.player.bottom = self.ground.top
-         self.velocity_y = 0
       
       
 
@@ -81,6 +114,8 @@ class Game:
       #draw it
       pygame.draw.rect(self.display, self.WEISS, self.player) #player
       pygame.draw.rect(self.display, self.SCHWARZ, self.ground) #ground
+      pygame.draw.rect(self.display, self.SCHWARZ, self.ceiling) #ceiling
+      pygame.draw.rect(self.display, self.ROT, self.player_feet) #player füße
       pygame.display.flip() #bildschirm aktualisieren
 
 
