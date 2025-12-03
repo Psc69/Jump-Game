@@ -1,5 +1,7 @@
 import pygame, sys
 
+from scripts.tilemap import TileMap
+
 WIDTH, HEIGHT = 800, 600 #fenster größe
 FPS = 60 #bilder pro sekunde
 
@@ -30,9 +32,24 @@ class Game:
       self.playerBreite, self.playerHöhe = 25, 45 
       self.playerX, self.playerY = centerofscreen_x(self.playerBreite), 50 
       self.player = pygame.Rect(self.playerX, self.playerY, self.playerBreite, self.playerHöhe)
+      self.JUMP_STRENGTH = -8
       self.velocity_y = 0
       self.flip = False
 
+      #demo level
+      demo_level = [
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+         [0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0],
+         [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
+         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      ]
+
+      #Tilemap
+      self.level_01 = TileMap(32, demo_level, self.display)
 
       #boden 
       self.groundBreite, self.groundHöhe = 300, 25
@@ -58,7 +75,7 @@ class Game:
 
       #apply gravity
       self.velocity_y += self.GRAVITY
-      
+
       #move player vertically
       self.player.y += self.velocity_y
 
@@ -70,13 +87,14 @@ class Game:
          5
       )
 
-      #ground collision
-      if self.player_feet.colliderect(self.ground) and self.velocity_y >= 0:
-         self.player.bottom = self.ground.top
-         self.velocity_y = 0
-         self.on_ground = True
-      else:
-         self.on_ground = False
+      #tile collision
+      self.on_ground = False
+      for tile_rect in self.level_01.get_collision_rects():
+         if self.player_feet.colliderect(tile_rect) and self.velocity_y >= 0:
+            self.player.bottom = tile_rect.top
+            self.velocity_y = 0
+            self.on_ground = True
+            break
 
       key = pygame.key.get_pressed()
       if key[pygame.K_d] or key[pygame.K_RIGHT]:
@@ -89,19 +107,20 @@ class Game:
 
       #jump
       if key[pygame.K_SPACE] and self.on_ground:
-         self.velocity_y += -8 
-
-      
-      
+         self.velocity_y += self.JUMP_STRENGTH
 
    def draw(self):
       #hintergrund farbe
       self.display.fill(self.BG)
 
+      #tilemap
+      self.level_01.draw(self.display) #tilemap
+
       #draw it
       pygame.draw.rect(self.display, self.WEISS, self.player) #player
-      pygame.draw.rect(self.display, self.SCHWARZ, self.ground) #ground
+      #pygame.draw.rect(self.display, self.SCHWARZ, self.ground) #ground
       pygame.draw.rect(self.display, self.ROT, self.player_feet) #player füße
+
       pygame.display.flip() #bildschirm aktualisieren
 
 
