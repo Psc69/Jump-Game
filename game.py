@@ -29,9 +29,9 @@ class Game:
          return self.centerofscreen_y - input // 2
 
       #spieler
-      self.playerBreite, self.playerHöhe = 25, 45 
-      self.playerX, self.playerY = centerofscreen_x(self.playerBreite), 50 
-      self.player = pygame.Rect(self.playerX, self.playerY, self.playerBreite, self.playerHöhe)
+      self.playerSize = [25, 45]
+      self.playerPos = [centerofscreen_x(self.playerSize[0]), 50]
+      self.player = pygame.Rect(self.playerPos[0], self.playerPos[1], self.playerSize[0], self.playerSize[1])
       self.JUMP_STRENGTH = -8
       self.velocity_y = 0
       self.flip = False
@@ -51,11 +51,6 @@ class Game:
       #Tilemap
       self.level_01 = TileMap(32, demo_level, self.display)
 
-      #boden 
-      self.groundBreite, self.groundHöhe = 300, 25
-      self.groundX, self.groundY = centerofscreen_x(self.groundBreite), self.display.get_height() - 50
-      self.ground = pygame.Rect(self.groundX, self.groundY, self.groundBreite, self.groundHöhe)
-
       #physik variablen
       self.GRAVITY = 0.25
 
@@ -64,10 +59,6 @@ class Game:
       self.WEISS = (255, 255, 255) #spieler farbe
       self.SCHWARZ = (0, 0, 0) #ground farbe
       self.ROT = (255, 0, 0) #ROT
-
-   #platform
-   def tile (self, x, y):
-      return pygame.Rect(x, y, 50, 50)
    
    def update(self):
       #reset bewegung
@@ -118,7 +109,6 @@ class Game:
 
       #draw it
       pygame.draw.rect(self.display, self.WEISS, self.player) #player
-      #pygame.draw.rect(self.display, self.SCHWARZ, self.ground) #ground
       pygame.draw.rect(self.display, self.ROT, self.player_feet) #player füße
 
       pygame.display.flip() #bildschirm aktualisieren
@@ -135,10 +125,6 @@ class Game:
 
          self.update()
          self.draw()
-
-         print(self.velocity_y)
-         if pygame.key.get_pressed()[pygame.K_SPACE]:
-            print("SPRINGE")
       
          self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0)) #skalierung
          self.clock.tick(FPS) #FPS
