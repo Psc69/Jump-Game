@@ -29,9 +29,13 @@ class TileMap:
                tiles.append(rect)
       return tiles
 
-   def draw(self, surface):
+   def draw(self, surface, camera_offset=None):
       for tile in self.tiles:
-         pygame.draw.rect(surface, SCHWARZ, tile)  # Draw tiles in schwarz 
+         draw_rect = tile.copy()
+         if camera_offset:
+            draw_rect.x -= camera_offset.x
+            draw_rect.y -= camera_offset.y
+         pygame.draw.rect(surface, SCHWARZ, draw_rect)  # Draw tiles in schwarz 
 
    def get_collision_rects(self):
       # Returns all tile rects for collision detection
