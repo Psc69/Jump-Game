@@ -1,6 +1,6 @@
 import pygame
 
-GRAY = (100, 100, 100)
+SCHWARZ = (50, 50, 50) 
 
 class TileMap:
 
@@ -31,7 +31,7 @@ class TileMap:
 
    def draw(self, surface):
       for tile in self.tiles:
-         pygame.draw.rect(surface, GRAY, tile)  # Draw tiles in gray color
+         pygame.draw.rect(surface, SCHWARZ, tile)  # Draw tiles in schwarz 
 
    def get_collision_rects(self):
       # Returns all tile rects for collision detection
