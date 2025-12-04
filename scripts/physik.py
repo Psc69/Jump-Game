@@ -18,3 +18,4 @@ class Physik:
       #TODO: change to blit later am besten mit:
       """surf.blit(self.game.assets['player'], self.pos)"""
       pygame.draw.rect(surface, (255, 255, 255), (self.pos[0], self.pos[1], self.size[0], self.size[1]))
+      

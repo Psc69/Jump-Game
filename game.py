@@ -1,6 +1,7 @@
 import pygame, sys
 
 from scripts.tilemap import TileMap
+from scripts.physik import Physik
 
 WIDTH, HEIGHT = 800, 600 #fenster größe
 FPS = 60 #bilder pro sekunde
