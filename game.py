@@ -1,4 +1,4 @@
-import pygame, sys
+import pygame, sys, time
 
 from scripts.tilemap import TileMap
 from scripts.camera import Camera
@@ -36,11 +36,16 @@ class Game:
       #spieler
       self.playerSize = [35, 65]
       self.playerPos = [centerofscreen_x(self.playerSize[0]), 50]
-      self.player = pygame.Rect(self.playerPos[0], self.playerPos[1], self.playerSize[0], self.playerSize[1])
-      self.JUMP_STRENGTH = -9
+      self.player = pygame.Rect(self.playerPos[0], self.playerPos[1], self.playerSize[0], self.playerSize[1]) # x, y, breite, höhe
+      self.JUMP_STRENGTH = -10
       self.velocity_y = 0
       self.flip = False
       self.show_hitboxes = False
+
+      #dash player
+      self.is_dashing = False
+      self.dash_time = 0
+      self.dash_timer = 0.6
 
       #demo level
       demo_level = [
@@ -54,37 +59,55 @@ class Game:
          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
       ]
       demo_level1 = [
-         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1],
+         [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+         [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
       ]
 
+      demo_level2 = [
+
+         [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+         [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,],
+         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+      ]
+
       #Tilemap
-      self.level = TileMap(32, demo_level1, self.display)
+      self.level = TileMap(16, demo_level2, self.display)
 
       # Camera
       self.camera = Camera(self.display.get_width(), self.display.get_height())
 
       #physik variablen
-      self.GRAVITY = 0.25
+      self.GRAVITY = 0.3
 
       #farben variablen
       self.BG = (200, 180, 150) #hintergrund farbe
       self.WEISS = (255, 255, 255) #spieler farbe
       self.SCHWARZ = (0, 0, 0) #ground farbe
       self.ROT = (255, 0, 0) #ROT
+      self.GRÜN = (0, 255, 0) #GRÜN
+
+
    
    def update(self):
       #reset bewegung
       self.velocity_x = 0
 
-      #apply gravity
+      #gravität
       self.velocity_y += self.GRAVITY
 
-      #move player vertically
+      #füge velocity vertikal an (springen usw)
       self.player.y += self.velocity_y
 
       #key inputs
@@ -165,6 +188,14 @@ class Game:
       #jump
       if key[pygame.K_SPACE] and self.on_ground:
          self.velocity_y += self.JUMP_STRENGTH
+      
+      #fast fall
+      if not self.on_ground and key[pygame.K_s]:
+         self.velocity_y += 0.5 
+
+      #crouch
+      if self.on_ground and key[pygame.K_s]:
+         self.playerSize[1] *= 0.5
 
       #hitboxen anzeigen
       if key[pygame.K_h]:
@@ -201,7 +232,7 @@ class Game:
          pygame.draw.rect(self.display, color, draw_rect, 5)
 
       if self.show_hitboxes:
-         show_hitbox(self.player_feet, (0, 255, 0)) #player füße
+         show_hitbox(self.player_feet, self.GRÜN) #player füße
          show_hitbox(self.player_head, (0, 0, 255)) #player kopf
          show_hitbox(self.player_left, (255, 255, 0)) #player links
          show_hitbox(self.player_right, (255, 0, 255)) #player rechts
@@ -212,6 +243,9 @@ class Game:
 
       pos_text = self.font.render(f'Pos: {self.player.x}, {self.player.y}', True, (0, 0, 0))
       self.display.blit(pos_text, (10, 40))
+
+      vel_text = self.font.render(f'vel: {self.velocity_x}, {int(self.velocity_y)}', False, self.SCHWARZ)
+      self.display.blit(vel_text, (10, 70))
 
       pygame.display.flip() #bildschirm aktualisieren
 

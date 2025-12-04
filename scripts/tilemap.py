@@ -27,6 +27,11 @@ class TileMap:
                y = self.display.get_height() - (rows - row_index) * self.tile_size
                rect = pygame.Rect(x, y, self.tile_size, self.tile_size)
                tiles.append(rect)
+            if tile == 2: # appearing font tile
+               x = col_index * self.tile_size
+               y = self.display.get_height() - (rows - row_index) * self.tile_size
+               rect = pygame.Rect(x, y, self.tile_size, self.tile_size)
+               tiles.append(rect)
       return tiles
 
    def draw(self, surface, camera_offset=None):
